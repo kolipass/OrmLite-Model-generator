@@ -9,6 +9,11 @@ import java.util.List;
  * Time: 10:47
  */
 public class TableFields {
+    static String[] integerType = {"INT", "INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT", "UNSIGNED BIG INT", "INT2", "INT8"};
+    static String[] textType = {"CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR", "NATIVE CHARACTER", "NVARCHAR", "TEXT", "CLOB"};
+    static String[] realType = {"REAL", "DOUBLE", "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL"};
+    static String[] primarySimpleValue = {"id"};
+    static String[] secondarySimpleValue = {"name", "description", "url"};
     String tableName;
     List<FieldModel> fieldModelList = new ArrayList<>();
 
@@ -22,21 +27,66 @@ public class TableFields {
         }
     }
 
-    public String generate() {
-        String result = "public class " + tableName + " extends Model { \r\n";
-
-
-        //Названия полей таблицы
+    /**
+     * Названия полей таблицы
+     *
+     * @return
+     */
+    String tableFiledName() {
+        String result = "";
         for (FieldModel model : fieldModelList) {
             result += "\r\n\t" + getTableFieldName(model);
         }
         result += "\r\n";
+        return result;
+    }
 
-        //аннотации и поля
+    /**
+     * аннотации и поля
+     *
+     * @return
+     */
+    String annotations() {
+        String result = "";
         for (FieldModel model : fieldModelList) {
             result += "\r\n\t" + getAnnotation(model);
             result += "\r\n\t" + getField(model);
         }
+        return result;
+    }
+
+   public static String upFirstLetter(String s){
+        char[] stringArray = s.toCharArray();
+        stringArray[0] = Character.toUpperCase(stringArray[0]);
+        s = new String(stringArray);
+        return s;
+    }
+
+
+    public String generate(String classPath) {
+        String result = "package " + classPath + ".model;\n";
+        result += "public class " + upFirstLetter(tableName) + " { \r\n";
+
+        //Названия полей таблицы
+        result += tableFiledName();
+        //аннотации и поля
+        result += annotations();
+        result += "\r\n\n}";
+
+        return result;
+    }
+
+    public String generate(String classPath, String parrentModelClassName) {
+        String result = "package " + classPath + ".model;\n";
+        result += "import " + parrentModelClassName + "; \r\n";
+        String modelName = parrentModelClassName.substring(parrentModelClassName.lastIndexOf(".")+1);
+        result += "public class " + upFirstLetter(tableName) + " extends " + modelName + "{ \r\n";
+
+        //Названия полей таблицы
+        result += tableFiledName();
+        //аннотации и поля
+        result += annotations();
+
         result += "\r\n\n}";
 
         return result;
@@ -62,11 +112,6 @@ public class TableFields {
     }
 
     private String getFieldDataType(FieldModel model, Boolean isObject) throws ClassCastException {
-        String[] integerType = {"INT", "INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT", "UNSIGNED BIG INT", "INT2", "INT8"};
-        String[] textType = {"CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR", "NATIVE CHARACTER", "NVARCHAR", "TEXT", "CLOB"};
-        String[] realType = {"REAL", "DOUBLE", "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL"};
-
-
         String type = "";
 
         for (int i = 0; i < integerType.length; i++) {
@@ -138,11 +183,6 @@ public class TableFields {
     }
 
     private String getType(FieldModel model, Boolean isObject) throws ClassCastException {
-        String[] integerType = {"INT", "INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT", "UNSIGNED BIG INT", "INT2", "INT8"};
-        String[] textType = {"CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR", "NATIVE CHARACTER", "NVARCHAR", "TEXT", "CLOB"};
-        String[] realType = {"REAL", "DOUBLE", "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL"};
-
-
         String type = "";
 
 
@@ -211,5 +251,49 @@ public class TableFields {
 
 
         return result;
+    }
+
+    public String getPrimary() throws RuntimeException {
+        String primary = "";
+
+        for (FieldModel model : fieldModelList) {
+
+            for (int i = 0; i < primarySimpleValue.length; i++) {
+                if (primarySimpleValue[i].equals(model.getName())) {
+                    primary = model.getName();
+                    break;
+
+                }
+            }
+            if (!primary.isEmpty()) {
+                break;
+            }
+        }
+        if (primary.isEmpty()) {
+            throw new RuntimeException("Первичный ключ для таблицы " + tableName + " не найден");
+        }
+        return primary;
+    }
+
+    public String getSecondary() {
+        String primary = "";
+
+        for (FieldModel model : fieldModelList) {
+
+            for (int i = 0; i < secondarySimpleValue.length; i++) {
+                if (secondarySimpleValue[i].equals(model.getName())) {
+                    primary = model.getName();
+                    break;
+
+                }
+            }
+            if (!primary.isEmpty()) {
+                break;
+            }
+        }
+        if (primary.isEmpty()) {
+            throw new RuntimeException("Вторичный ключ для таблицы " + tableName + " не найден");
+        }
+        return primary;
     }
 }
