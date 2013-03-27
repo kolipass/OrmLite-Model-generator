@@ -7,14 +7,28 @@ import java.sql.SQLException;
  * User: artem
  * Date: 26.03.13
  * Time: 10:24
+ * <p/>
+ * Модель, описывающая поле таблицы, которое отдает бд при запросе вида:  PRAGMA table_info (tableName)
  */
 public class FieldModel {
+    /**
+     * Номер поля по порядку
+     */
     String cid;
     String name;
     String type;
     String notnull;
     String dflt_value;
+    /**
+     * Примари кей, 1 если так, 0 если нет.
+     */
     String pk;
+
+    /**
+     * Конструктор модели. Соберет модель из
+     * @param tableInfoResult результат выполнения запроса
+     * @throws SQLException ошибка доступа к результату запроса
+     */
 
     public FieldModel(ResultSet tableInfoResult) throws SQLException {
         this.setCid(tableInfoResult.getString("cid"));

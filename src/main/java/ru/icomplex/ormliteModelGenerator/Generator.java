@@ -22,43 +22,10 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * User: artem
- * Date: 26.03.13
- * Time: 10:37
- */
-
-class ModelGroup {
-    String modelGroup;
-    String projectName;
-
-    ModelGroup(String modelGroup, String projectName) {
-        this.modelGroup = modelGroup;
-        this.projectName = projectName;
-    }
-
-    ModelGroup(String projectName) {
-        this.projectName = projectName;
-    }
-
-    String getModelGroup() {
-        return modelGroup;
-    }
-
-    void setModelGroup(String modelGroup) {
-        this.modelGroup = modelGroup;
-    }
-
-    public String getProjectName() {
-        return projectName;
-    }
-
-    public String getDataScheme() {
-        return modelGroup + ":" + projectName;
-    }
-}
+import static ru.icomplex.ormliteModelGenerator.TableFields.upFirstLetter;
 
 public class Generator {
+    private static final String baseFolder = "src/main/";
     String dbfile;
     String outPath;
     String classPath;
@@ -71,6 +38,13 @@ public class Generator {
         this.modelGroup = modelGroup;
         this.outPath = outPath;
     }
+
+    /**
+     * Мультикомбайн - сгенирирует классики и модель схемы
+     * о проблемах расскажет в лог
+     *
+     * @throws Exception
+     */
 
     public void generate() throws Exception {
         Class.forName("org.sqlite.JDBC");
@@ -96,7 +70,7 @@ public class Generator {
 
             String classPath = generateClassPath(outPath);
             if (!classPath.isEmpty()) {
-                if (writeModel(classPath, tableName, tableFields.generate(this.classPath," ru.ifacesoft.anu.model.Model"))) {
+                if (writeModel(classPath, tableName, tableFields.generate(this.classPath, " ru.ifacesoft.anu.model.Model"))) {
                     System.out.println(tableName + " модель создана в папку " + classPath);
                 } else {
                     System.out.println("Не удалось записать" + tableName + "в папку " + classPath);
@@ -118,7 +92,7 @@ public class Generator {
     private String generateClassPath(String outPath) {
         String classDirectoryPath = classPath.replaceAll("\\.", "/") + "/model/";
 
-        String path = outPath + "src/main/java/" + classDirectoryPath;
+        String path = outPath + baseFolder + "java/" + classDirectoryPath;
         File classDirectory = new File(path);
 
         return classDirectory.mkdirs() || (classDirectory.exists() && classDirectory.isDirectory()) ? path : "";
@@ -126,7 +100,7 @@ public class Generator {
 
     private boolean writeModel(String path, String className, String text) {
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(path + TableFields.upFirstLetter(className) + ".java"));
+            BufferedWriter out = new BufferedWriter(new FileWriter(path + upFirstLetter(className) + ".java"));
             out.write(text);
             out.close();
         } catch (IOException e) {
@@ -166,7 +140,7 @@ public class Generator {
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
 
-        String directoryPath = outPath + "resources.ru.ifacesoft.anu.dataScheme".replaceAll(".", "/") + "/";
+        String directoryPath = outPath + baseFolder + "resources.ru.ifacesoft.anu.dataScheme".replaceAll("\\.", "/") + "/";
         String filePath = directoryPath + "DataScheme.xml";
 
         File dirFile = new File(directoryPath);
@@ -191,17 +165,19 @@ public class Generator {
         Element rootElementDataScheme = doc.createElement("config");
         doc.appendChild(rootElementDataScheme);
 
-        // path elements
-        Element model = doc.createElement("model");
 
         for (TableFields tableFields : tableFieldsList) {
-            model.appendChild(doc.createTextNode(modelGroup.getModelGroup() + ":" + tableFields.tableName));
-            if (!writeModelScheme(tableFields)) {
+            Element model = doc.createElement("model");
+            model.appendChild(doc.createTextNode(modelGroup.getModelGroup() + ":" + upFirstLetter(tableFields.tableName)));
+            try {
+                writeModelScheme(tableFields);
+                rootElementDataScheme.appendChild(model);
+            } catch (Exception e) {
+                e.printStackTrace();
                 System.out.println("Не удалось записать" + tableFields);
                 return false;
             }
         }
-        rootElementDataScheme.appendChild(model);
 
 
         // write the content into xml file
@@ -209,7 +185,7 @@ public class Generator {
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
 
-        String directoryPath = outPath + "resources." + classPath.replaceAll(".", "/") + "/dataScheme/";
+        String directoryPath = outPath + baseFolder + "resources/" + classPath.replaceAll("\\.", "/") + "/dataScheme/";
         String filePath = directoryPath + modelGroup.getProjectName() + "DataScheme.xml";
 
         File dirFile = new File(directoryPath);
@@ -248,6 +224,10 @@ public class Generator {
         dataScheme.appendChild(doc.createTextNode(modelGroup.getDataScheme()));
 
         rootElement.appendChild(dataSource);
+        Element dataSchemeElement = doc.createElement("dataScheme");
+        dataSchemeElement.appendChild(doc.createTextNode(modelGroup.getDataScheme()));
+        rootElement.appendChild(dataSchemeElement);
+
 
         Element model = doc.createElement("model");
         Element primary = doc.createElement("primary");
@@ -260,22 +240,14 @@ public class Generator {
 
         rootElement.appendChild(model);
 
-        // shorten way
-        // path.setAttribute("id", "1");
-
-        // firstname elements
-
-        Element dataSchemeElement = doc.createElement("dataSchemeElement");
-        dataSchemeElement.appendChild(doc.createTextNode(modelGroup.getDataScheme()));
-        rootElement.appendChild(dataSchemeElement);
 
         // write the content into xml file
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
 
-        String directoryPath = outPath + "resources." + classPath.replaceAll(".", "/") + "/model/";
-        String filePath = directoryPath + "TableFields" + ".xml";
+        String directoryPath = outPath + baseFolder + "resources/" + classPath.replaceAll("\\.", "/") + "/model/";
+        String filePath = directoryPath + upFirstLetter(tableFields.tableName) + ".xml";
 
         File dirFile = new File(directoryPath);
         dirFile.mkdirs();
