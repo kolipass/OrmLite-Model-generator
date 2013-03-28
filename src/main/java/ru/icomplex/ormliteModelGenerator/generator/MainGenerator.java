@@ -11,14 +11,16 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.icomplex.ormliteModelGenerator.dataDescription.TableFields.upFirstLetter;
+
 public class MainGenerator extends GeneratorAbstract {
     String dbfile;
     String outPath;
-    String classPath;
+    String classPackage;
     ModelGroup modelGroup;
 
     public MainGenerator(String dbfile, String classPath, ModelGroup modelGroup, String outPath) {
-        this.classPath = classPath;
+        this.classPackage = classPath;
         this.modelGroup = modelGroup;
         this.dbfile = dbfile;
         this.modelGroup = modelGroup;
@@ -40,6 +42,10 @@ public class MainGenerator extends GeneratorAbstract {
         PreparedStatement statementTables = connection.prepareStatement("SELECT name FROM sqlite_master WHERE type = \"table\"");
         ResultSet tablesResult = statementTables.executeQuery();
         List<TableFields> tableFieldsList = new ArrayList<>();
+
+        DataBaseHelperGenerator baseHelperGenerator = new DataBaseHelperGenerator(generateClassPath(outPath, classPackage), dbfile, classPackage);
+
+
         while (tablesResult.next()) {
             String tableName = tablesResult.getString(1);
 
@@ -54,7 +60,7 @@ public class MainGenerator extends GeneratorAbstract {
                 tableFields.addField(model);
             }
 
-            String modelClassPackage = classPath + ".model";
+            String modelClassPackage = classPackage + ".model";
             String modelPath = generateClassPath(outPath, modelClassPackage);
             if (!modelPath.isEmpty()) {
                 if (writeJava(modelPath, tableName, tableFields.generate(modelClassPackage, " ru.ifacesoft.anu.model.Model"))) {
@@ -62,11 +68,16 @@ public class MainGenerator extends GeneratorAbstract {
                 } else {
                     System.out.println("Не удалось записать" + tableName + "в папку " + modelPath);
                 }
-                String daoClassPackage = classPath + ".DAO";
+                String daoClassPackage = classPackage + ".DAO";
                 String daoPath = generateClassPath(outPath, daoClassPackage);
 
                 if (new DaoGenerator(daoClassPackage, daoPath, tableFields).generate()) {
-                    System.out.println(tableName + " Doa создана в папку " + daoPath);
+                    String modelName = upFirstLetter(tableName);
+                    String daoName = modelName + "DAO";
+
+                    baseHelperGenerator.addDao(modelName, daoName);
+
+                    System.out.println(tableName + " DAO создана в папку " + daoPath);
                 } else {
                     System.out.println("Не удалось записать " + tableName + "DAO в папку " + daoPath);
                 }
@@ -81,7 +92,13 @@ public class MainGenerator extends GeneratorAbstract {
             statementTableInfo.close();
         }
 
-        return (new MainDataSchemeGenerator(classPath, modelGroup, outPath).generate() &&
-                new ModelDataSchemeGenerator(classPath, modelGroup, outPath, tableFieldsList).generate());
+        if (baseHelperGenerator.generate()) {
+            System.out.println(" baseHelperGenerator создан в " + classPackage);
+        } else {
+            System.out.println(" baseHelperGenerator не создан");
+        }
+
+        return (new MainDataSchemeGenerator(classPackage, modelGroup, outPath).generate() &&
+                new ModelDataSchemeGenerator(classPackage, modelGroup, outPath, tableFieldsList).generate());
     }
 }

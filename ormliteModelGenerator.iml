@@ -19,6 +19,7 @@
     <orderEntry type="library" name="Maven: com.sun.xml.bind:jaxb-impl:2.2.5-b10" level="project" />
     <orderEntry type="module" module-name="anu-data-common" />
     <orderEntry type="library" name="Maven: com.j256.ormlite:ormlite-core:4.42" level="project" />
+    <orderEntry type="library" name="Maven: com.j256.ormlite:ormlite-android:4.42" level="project" />
   </component>
 </module>
 

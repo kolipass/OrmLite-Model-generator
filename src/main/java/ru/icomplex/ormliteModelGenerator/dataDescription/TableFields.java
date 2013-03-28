@@ -26,6 +26,11 @@ public class TableFields {
         stringArray[0] = Character.toUpperCase(stringArray[0]);
         s = new String(stringArray);
         return s;
+    }    public static String lowerFirstLetter(String s) {
+        char[] stringArray = s.toCharArray();
+        stringArray[0] = Character.toLowerCase(stringArray[0]);
+        s = new String(stringArray);
+        return s;
     }
 
     public String getTableName() {
