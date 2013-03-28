@@ -1,4 +1,4 @@
-package ru.icomplex.ormliteModelGenerator;
+package ru.icomplex.ormliteModelGenerator.dataDescription;
 
 /**
  * User: artem
@@ -10,7 +10,7 @@ public class ModelGroup {
     String modelGroup;
     String projectName;
 
-    ModelGroup(String modelGroup, String projectName) {
+    public ModelGroup(String modelGroup, String projectName) {
         this.modelGroup = modelGroup;
         this.projectName = projectName;
     }
@@ -19,7 +19,7 @@ public class ModelGroup {
         this.projectName = projectName;
     }
 
-    String getModelGroup() {
+    public String getModelGroup() {
         return modelGroup;
     }
 

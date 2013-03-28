@@ -1,4 +1,4 @@
-package ru.icomplex.ormliteModelGenerator;
+package ru.icomplex.ormliteModelGenerator.dataDescription;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +12,7 @@ public class TableFields {
     static String[] integerType = {"INT", "INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT", "UNSIGNED BIG INT", "INT2", "INT8"};
     static String[] textType = {"CHARACTER", "VARCHAR", "VARYING CHARACTER", "NCHAR", "NATIVE CHARACTER", "NVARCHAR", "TEXT", "CLOB"};
     static String[] realType = {"REAL", "DOUBLE", "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL"};
-    static String[] primarySimpleValue = {"id","objectid"};
+    static String[] primarySimpleValue = {"id", "objectid"};
     static String[] secondarySimpleValue = {"name", "description", "url"};
     String tableName;
     List<FieldModel> fieldModelList = new ArrayList<>();
@@ -28,6 +28,10 @@ public class TableFields {
         return s;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
     public void addField(FieldModel model) {
         if (model != null) {
             fieldModelList.add(model);
@@ -35,7 +39,7 @@ public class TableFields {
     }
 
     public String generate(String classPath) {
-        String result = "package " + classPath + ".model;\n";
+        String result = "package " + classPath + ".ru.icomplex.gdeUslugi.dataDescription;\n";
         result += "public class " + upFirstLetter(tableName) + " { \r\n";
 
         //Названия полей таблицы
@@ -55,11 +59,14 @@ public class TableFields {
      * @return
      */
     public String generate(String classPath, String parentModelClassName) {
-        String result = "package " + classPath + ".model;\n";
+        String result = "package " + classPath + ";\n";
         result += "import " + parentModelClassName + "; \r\n";
-        result += "import com.j256.ormlite.field.DataType;\r\nimport com.j256.ormlite.field.DatabaseField;\r\nimport com.j256.ormlite.table.DatabaseTable;\r\n";
+        result += "import com.j256.ormlite.field.DataType;\r\n" +
+                "import com.j256.ormlite.field.DatabaseField;\r\n" +
+                "import com.j256.ormlite.table.DatabaseTable;" +
+                "\r\n";
         String modelName = parentModelClassName.substring(parentModelClassName.lastIndexOf(".") + 1);
-        result +="@DatabaseTable(tableName = \""+tableName+"\")";
+        result += "@DatabaseTable(tableName = \"" + tableName + "\") \r\n";
         result += "public class " + upFirstLetter(tableName) + " extends " + modelName + "{ \r\n";
 
         //Названия полей таблицы
@@ -209,9 +216,8 @@ public class TableFields {
      * @param model
      * @return
      */
-    private String getType(FieldModel model, Boolean isObject) throws ClassCastException {
+    public String getType(FieldModel model, Boolean isObject) throws ClassCastException {
         String type = "";
-
 
         for (int i = 0; i < integerType.length; i++) {
             if (integerType[i].equals(model.getType().toUpperCase())) {
@@ -280,6 +286,28 @@ public class TableFields {
         return result;
     }
 
+    public FieldModel getPrimaryKeyFieldModel() throws RuntimeException {
+        FieldModel primary = null;
+
+        for (FieldModel model : fieldModelList) {
+
+            for (int i = 0; i < primarySimpleValue.length; i++) {
+                if (primarySimpleValue[i].equals(model.getName())) {
+                    primary = model;
+                    break;
+
+                }
+            }
+            if (!(primary == null)) {
+                break;
+            }
+        }
+        if (primary == null) {
+            throw new RuntimeException("Первичный ключ для таблицы " + tableName + " не найден");
+        }
+        return primary;
+    }
+
     /**
      * Получить строку-наименование поля первичного ключа. Получение по словарю primarySimpleValue
      *
@@ -287,7 +315,7 @@ public class TableFields {
      * @throws RuntimeException
      */
 
-    public String getPrimary() throws RuntimeException {
+    public String getPrimaryKeyName() throws RuntimeException {
         String primary = "";
 
         for (FieldModel model : fieldModelList) {
@@ -315,7 +343,7 @@ public class TableFields {
      * @return строка-наименование поля
      * @throws RuntimeException
      */
-    public String getSecondary() {
+    public String getSecondaryKeyName() {
         String secondary = "";
 
         for (FieldModel model : fieldModelList) {
@@ -332,9 +360,25 @@ public class TableFields {
             }
         }
         if (secondary.isEmpty()) {
-            secondary = getPrimary();
+            secondary = getPrimaryKeyName();
             System.out.println("Вторичный ключ для таблицы " + tableName + " не найден, записан аналогичный первичному: " + secondary);
         }
         return secondary;
+    }
+
+    public String getFieldType(String fieldName) {
+        FieldModel model = null;
+        for (FieldModel fieldModel : fieldModelList) {
+            if (fieldModel.getName().equals(fieldName)) {
+                model = fieldModel;
+                break;
+            }
+        }
+
+        if (model != null) {
+            return getFieldDataType(model, true);
+        }
+
+        return null;
     }
 }

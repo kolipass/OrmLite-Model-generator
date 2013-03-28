@@ -1,4 +1,4 @@
-package ru.icomplex.ormliteModelGenerator;
+package ru.icomplex.ormliteModelGenerator.dataDescription;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
