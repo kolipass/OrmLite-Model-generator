@@ -2,7 +2,7 @@ package ru.icomplex.ormliteModelGenerator.generator;
 
 import ru.icomplex.ormliteModelGenerator.dataDescription.TableFields;
 
-import static ru.icomplex.ormliteModelGenerator.dataDescription.TableFields.upFirstLetter;
+import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
 
 /**
  * User: artem
@@ -20,7 +20,7 @@ public class DaoGenerator extends GeneratorAbstract {
         this.classPackage = classPackage;
         this.classPath = classPath;
         this.tableFields = tableFields;
-        modelClassName = upFirstLetter(tableFields.getTableName());
+        modelClassName = getClassName(tableFields.getTableName());
     }
 
     public String generateClassBody() {

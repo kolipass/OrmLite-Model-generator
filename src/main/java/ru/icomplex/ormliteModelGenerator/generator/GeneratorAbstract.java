@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static ru.icomplex.ormliteModelGenerator.dataDescription.TableFields.upFirstLetter;
+import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
 
 /**
  * User: artem
@@ -14,9 +14,10 @@ import static ru.icomplex.ormliteModelGenerator.dataDescription.TableFields.upFi
  */
 public abstract class GeneratorAbstract implements Generator {
     protected static final String baseFolder = "src/main/";
+
     protected boolean writeJava(String path, String className, String text) {
         try {
-            BufferedWriter out = new BufferedWriter(new FileWriter(path +"/"+ upFirstLetter(className) + ".java"));
+            BufferedWriter out = new BufferedWriter(new FileWriter(path + "/" + className + ".java"));
             out.write(text);
             out.close();
         } catch (IOException e) {
@@ -26,7 +27,7 @@ public abstract class GeneratorAbstract implements Generator {
         return true;
     }
 
-    protected String generateClassPath(String outPath,  String classPackage) {
+    protected String generateClassPath(String outPath, String classPackage) {
         String classDirectoryPath = classPackage.replaceAll("\\.", "/");
 
         String path = outPath + baseFolder + "java/" + classDirectoryPath;

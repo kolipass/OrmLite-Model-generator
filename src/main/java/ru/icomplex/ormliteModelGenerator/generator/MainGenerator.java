@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.icomplex.ormliteModelGenerator.dataDescription.TableFields.upFirstLetter;
+import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.*;
 
 public class MainGenerator extends GeneratorAbstract {
     String dbfile;
@@ -63,7 +63,7 @@ public class MainGenerator extends GeneratorAbstract {
             String modelClassPackage = classPackage + ".model";
             String modelPath = generateClassPath(outPath, modelClassPackage);
             if (!modelPath.isEmpty()) {
-                if (writeJava(modelPath, tableName, tableFields.generate(modelClassPackage, " ru.ifacesoft.anu.model.Model"))) {
+                if (writeJava(modelPath, getClassName(tableName), tableFields.generate(modelClassPackage, " ru.ifacesoft.anu.model.Model"))) {
                     System.out.println(tableName + " модель создана в папку " + modelPath);
                 } else {
                     System.out.println("Не удалось записать" + tableName + "в папку " + modelPath);
@@ -72,7 +72,7 @@ public class MainGenerator extends GeneratorAbstract {
                 String daoPath = generateClassPath(outPath, daoClassPackage);
 
                 if (new DaoGenerator(daoClassPackage, daoPath, tableFields).generate()) {
-                    String modelName = upFirstLetter(tableName);
+                    String modelName = getClassName(tableName);
                     String daoName = modelName + "DAO";
 
                     baseHelperGenerator.addDao(modelName, daoName);

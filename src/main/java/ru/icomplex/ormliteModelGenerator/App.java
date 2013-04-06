@@ -3,6 +3,10 @@ package ru.icomplex.ormliteModelGenerator;
 import ru.icomplex.ormliteModelGenerator.dataDescription.ModelGroup;
 import ru.icomplex.ormliteModelGenerator.generator.MainGenerator;
 
+/**
+ * Элементарная точка входа. Все просто)
+ */
+
 public class App {
 
     public static void main(String[] args) {

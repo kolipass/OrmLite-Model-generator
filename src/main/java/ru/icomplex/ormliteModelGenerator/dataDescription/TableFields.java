@@ -3,6 +3,8 @@ package ru.icomplex.ormliteModelGenerator.dataDescription;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
+
 /**
  * User: artem
  * Date: 26.03.13
@@ -21,18 +23,6 @@ public class TableFields {
         this.tableName = tableName;
     }
 
-    public static String upFirstLetter(String s) {
-        char[] stringArray = s.toCharArray();
-        stringArray[0] = Character.toUpperCase(stringArray[0]);
-        s = new String(stringArray);
-        return s;
-    }    public static String lowerFirstLetter(String s) {
-        char[] stringArray = s.toCharArray();
-        stringArray[0] = Character.toLowerCase(stringArray[0]);
-        s = new String(stringArray);
-        return s;
-    }
-
     public String getTableName() {
         return tableName;
     }
@@ -45,7 +35,7 @@ public class TableFields {
 
     public String generate(String classPath) {
         String result = "package " + classPath + ".ru.icomplex.gdeUslugi.dataDescription;\n";
-        result += "public class " + upFirstLetter(tableName) + " { \r\n";
+        result += "public class " + getClassName(tableName) + " { \r\n";
 
         //Названия полей таблицы
         result += tableFiledName();
@@ -72,7 +62,7 @@ public class TableFields {
                 "\r\n";
         String modelName = parentModelClassName.substring(parentModelClassName.lastIndexOf(".") + 1);
         result += "@DatabaseTable(tableName = \"" + tableName + "\") \r\n";
-        result += "public class " + upFirstLetter(tableName) + " extends " + modelName + "{ \r\n";
+        result += "public class " + getClassName(tableName) + " extends " + modelName + "{ \r\n";
 
         //Названия полей таблицы
         result += tableFiledName();

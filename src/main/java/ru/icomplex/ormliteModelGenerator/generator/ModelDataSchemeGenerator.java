@@ -17,7 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.util.List;
 
-import static ru.icomplex.ormliteModelGenerator.dataDescription.TableFields.upFirstLetter;
+import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
 
 /**
  * User: artem
@@ -41,6 +41,7 @@ public class ModelDataSchemeGenerator extends GeneratorAbstract {
     public boolean generate() throws Exception {
         return generateModelDataScheme(tableFieldsList);
     }
+
     private boolean generateModelDataScheme(List<TableFields> tableFieldsList) throws TransformerException, ParserConfigurationException {
 
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -54,7 +55,7 @@ public class ModelDataSchemeGenerator extends GeneratorAbstract {
 
         for (TableFields tableFields : tableFieldsList) {
             Element model = doc.createElement("model");
-            model.appendChild(doc.createTextNode(modelGroup.getModelGroup() + ":" + upFirstLetter(tableFields.getTableName())));
+            model.appendChild(doc.createTextNode(modelGroup.getModelGroup() + ":" + getClassName(tableFields.getTableName())));
             try {
                 writeModelScheme(tableFields);
                 rootElementDataScheme.appendChild(model);
@@ -140,7 +141,7 @@ public class ModelDataSchemeGenerator extends GeneratorAbstract {
         DOMSource source = new DOMSource(doc);
 
         String directoryPath = outPath + baseFolder + "resources/" + classPath.replaceAll("\\.", "/") + "/model/";
-        String filePath = directoryPath + upFirstLetter(tableFields.getTableName()) + ".xml";
+        String filePath = directoryPath + getClassName(tableFields.getTableName()) + ".xml";
 
         File dirFile = new File(directoryPath);
         dirFile.mkdirs();
@@ -152,7 +153,7 @@ public class ModelDataSchemeGenerator extends GeneratorAbstract {
 
         transformer.transform(source, result);
 
-        System.out.println(upFirstLetter(tableFields.getTableName()) + ".xml" + " создана в папку " + directoryPath);
+        System.out.println(getClassName(tableFields.getTableName()) + ".xml" + " создана в папку " + directoryPath);
         return true;
     }
 }
