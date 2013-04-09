@@ -16,7 +16,7 @@ public class ClassNameUtil {
     public static String getClassName(String name) {
         switch (TYPE) {
             case 0: {
-                name = replacesUnderline(replayPrefix(name, OLD_PREFIX, NEW_PREFIX));
+                name = replacesUnderline(replayPrefix(name, OLD_PREFIX, ""));
                 break;
             }
             case 1: {
@@ -27,10 +27,10 @@ public class ClassNameUtil {
         return name;
     }
 
-    public static String getObjectName(String className) {
+    public static String getVariableName(String className) {
         switch (TYPE) {
             case 0: {
-                className = new LowerFirstLetter(null, className).exec();
+                className = new LowerFirstLetter(null, replacesUnderline(className)).exec();
             }
         }
         return className;

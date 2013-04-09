@@ -39,7 +39,7 @@ public class MainGenerator extends GeneratorAbstract {
 
         Connection connection = DriverManager.getConnection("jdbc:sqlite:" + dbfile);
 
-        PreparedStatement statementTables = connection.prepareStatement("SELECT name FROM sqlite_master WHERE type = \"table\"");
+        PreparedStatement statementTables = connection.prepareStatement("SELECT name,sql FROM sqlite_master WHERE type = \"table\"");
         ResultSet tablesResult = statementTables.executeQuery();
         List<TableFields> tableFieldsList = new ArrayList<>();
 
@@ -48,11 +48,12 @@ public class MainGenerator extends GeneratorAbstract {
 
         while (tablesResult.next()) {
             String tableName = tablesResult.getString(1);
+            String sql = tablesResult.getString(2);
 
-            PreparedStatement statementTableInfo = connection.prepareStatement("PRAGMA table_info(" + tableName + ");");
+            PreparedStatement statementTableInfo = connection.prepareStatement("PRAGMA table_info(\"" + tableName + "\");");
             ResultSet tableInfoResult = statementTableInfo.executeQuery();
 
-            TableFields tableFields = new TableFields(tableName);
+            TableFields tableFields = new TableFields(tableName,sql);
 
             while (tableInfoResult.next()) {
                 FieldModel model = new FieldModel(tableInfoResult);
@@ -81,6 +82,23 @@ public class MainGenerator extends GeneratorAbstract {
                 } else {
                     System.out.println("Не удалось записать " + tableName + "DAO в папку " + daoPath);
                 }
+
+//                String ClassPackage = classPackage + ".modelCollection";
+//                String daoPath = generateClassPath(outPath, daoClassPackage);
+//
+//                if (new DaoGenerator(daoClassPackage, daoPath, tableFields).generate()) {
+//                    String modelName = getClassName(tableName);
+//                    String daoName = modelName + "DAO";
+//
+//                    baseHelperGenerator.addDao(modelName, daoName);
+//
+//                    System.out.println(tableName + " DAO создана в папку " + daoPath);
+//                } else {
+//                    System.out.println("Не удалось записать " + tableName + "DAO в папку " + daoPath);
+//                }
+
+
+
 
             } else {
                 System.out.println(" modelClassPath пуст, модель " + tableName + " не записана");

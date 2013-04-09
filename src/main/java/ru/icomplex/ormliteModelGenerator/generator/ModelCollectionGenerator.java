@@ -8,16 +8,18 @@ import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
  * User: artem
  * Date: 27.03.13
  * Time: 17:28
+ *
+ * Генерирует Коллекцию моделей для anu-common
  */
-public class DaoGenerator extends GeneratorAbstract {
-    private static final String POSTFIX = "DAO";
+public class ModelCollectionGenerator extends GeneratorAbstract {
     String classPath;
     TableFields tableFields;
     String modelClassName;
     private String classPackage;
+    private static final String POSTFIX = "Collection";
 
 
-    public DaoGenerator(String classPackage, String classPath, TableFields tableFields) {
+    public ModelCollectionGenerator(String classPackage, String classPath, TableFields tableFields) {
         this.classPackage = classPackage;
         this.classPath = classPath;
         this.tableFields = tableFields;
@@ -27,17 +29,15 @@ public class DaoGenerator extends GeneratorAbstract {
     public String generateClassBody() {
         String result = "package " + classPackage + ";\n";
 
-        result += "import com.j256.ormlite.dao.BaseDaoImpl;\n" +
-                "import com.j256.ormlite.support.ConnectionSource;\n" +
-                "import java.sql.SQLException;\n" +
-                "import java.util.List;\n";
+        result += "import ru.ifacesoft.anu.modelCollection.ModelCollection;\n";
         result += getImportModel(modelClassName, classPackage) + "\n\n";
 
-        String extendsString = "extends BaseDaoImpl<" + modelClassName + "," + tableFields.getType(tableFields.getPrimaryKeyFieldModel(), true) + ">";
+        String extendsString = "<M extends "+modelClassName+"> extends ModelCollection<M>";
         result += "public class " + modelClassName + POSTFIX + " " + extendsString + "{ \r\n";
 
+
         result += getConstructor() + "\n\n";
-        result += getList();
+        //аннотации и поля
 
         result += "\r\n\n}";
 
@@ -48,20 +48,14 @@ public class DaoGenerator extends GeneratorAbstract {
         return "import " + classPackage.substring(0, classPackage.lastIndexOf(".")) + ".model." + modelClassName + ";";
     }
 
-    private String getList() {
-        String result = "";
-        result += "  public List<" + modelClassName + "> get" + modelClassName + "List() throws SQLException {\n" +
-                "        return this.queryForAll();\n" +
-                "    }";
-        return result;
 
-    }
 
     private String getConstructor() {
         String result = "";
-        result += "    public " + modelClassName + POSTFIX + "(ConnectionSource connectionSource, Class<" + modelClassName + "> dataClass) throws SQLException {\n" +
-                "        super(connectionSource, dataClass);\n" +
-                "    }";
+//        ToDo Если вдруг когда-нибудь...
+//        result += "    public " + modelClassName + POSTFIX) {\n" +
+//                "        super();\n" +
+//                "    }";
         return result;
     }
 

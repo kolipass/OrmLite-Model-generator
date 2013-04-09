@@ -3,7 +3,7 @@ package ru.icomplex.ormliteModelGenerator.generator;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getObjectName;
+import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getVariableName;
 
 /**
  * User: artem
@@ -95,7 +95,7 @@ public class DataBaseHelperGenerator extends GeneratorAbstract {
                 "private static final int DATABASE_VERSION = " + DATABASE_VERSION + ";\n";
 
         for (String daoName : daoList) {
-            result += "private " + daoName + " " + getObjectName(daoName) + " = null;\n";
+            result += "private " + daoName + " " + getVariableName(daoName) + " = null;\n";
         }
         return result;
     }
@@ -112,10 +112,10 @@ public class DataBaseHelperGenerator extends GeneratorAbstract {
         for (String daoName : daoList) {
             i++;
             result += "public " + daoName + " get" + daoName + "() throws SQLException {\n" +
-                    "        if (" + getObjectName(daoName) + " == null) {\n" +
-                    "            " + getObjectName(daoName) + " = new " + daoName + "(getConnectionSource(), " + modelList.get(i) + ".class);\n" +
+                    "        if (" + getVariableName(daoName) + " == null) {\n" +
+                    "            " + getVariableName(daoName) + " = new " + daoName + "(getConnectionSource(), " + modelList.get(i) + ".class);\n" +
                     "        }\n" +
-                    "        return " + getObjectName(daoName) + ";\n" +
+                    "        return " + getVariableName(daoName) + ";\n" +
                     "    }\n";
         }
         return result;
@@ -163,7 +163,7 @@ public class DataBaseHelperGenerator extends GeneratorAbstract {
                 "        super.close();";
 
         for (String daoName : daoList) {
-            result += getObjectName(daoName) + "= null;\n";
+            result += getVariableName(daoName) + "= null;\n";
         }
 
         result += "    }";
