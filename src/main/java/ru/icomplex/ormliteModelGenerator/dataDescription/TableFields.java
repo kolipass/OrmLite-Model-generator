@@ -1,19 +1,14 @@
 package ru.icomplex.ormliteModelGenerator.dataDescription;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
-import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getVariableName;
 
 /**
  * User: artem
  * Date: 26.03.13
  * Time: 10:47
+ * <p/>
+ * СУщьность описывает все поля таблицы и умеет генерировать java-код аннотированной модели подобной данной таблице
  */
 public class TableFields {
     private static final String[] integerType = {"INT", "INTEGER", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT", "UNSIGNED BIG INT", "INT2", "INT8"};
@@ -21,200 +16,31 @@ public class TableFields {
     private static final String[] realType = {"REAL", "DOUBLE", "DOUBLE PRECISION", "FLOAT", "NUMERIC", "DECIMAL"};
     private static final String[] primarySimpleValue = {"id", "objectid"};
     private static final String[] secondarySimpleValue = {"name", "description", "url"};
-    private static final boolean foreignAutoRefresh = true;
-    private static final String datePackage = "java.util.Date";
     String tableName;
     String sql;
     List<FieldModel> fieldModelList = new ArrayList<>();
-    List<String> imports = new ArrayList<String>();
+
 
     public TableFields(String tableName, String sql) {
         this.tableName = tableName;
         this.sql = sql;
     }
 
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void addField(FieldModel model) {
-        if (model != null) {
-            fieldModelList.add(model);
-        }
-    }
-
-//    public String generate(String classPath) {
-//        String result = "package " + classPath + ".ru.icomplex.gdeUslugi.dataDescription;\n";
-//        result += "public class " + getClassName(tableName) + " { \r\n";
-//
-//        //Названия полей таблицы
-//        result += tableFiledName();
-//        //аннотации и поля
-//        result += annotations();
-//        result += "\r\n\n}";
-//
-//        return result;
-//    }
-
     /**
      * Генератор модели, наследуемой от объекта
      *
-     * @param classPath            package для данной модели
-     * @param parentModelClassName package+название класса-родителя
-     * @return
-     */
-    public String generate(String classPath, String parentModelClassName) {
-        String result;
-
-        String packageString = "package " + classPath + ";\n";
-
-        generateBasicImports();
-        imports.add("import " + parentModelClassName + "; \r\n");
-
-        String modelName = parentModelClassName.substring(parentModelClassName.lastIndexOf(".") + 1);
-
-        String classAnnotation = "@DatabaseTable(tableName = \"" + tableName + "\") \r\n";
-        String className = "public class " + getClassName(tableName) + " extends " + modelName + "{ \r\n";
-
-
-        result = packageString;
-        result += stringListToString(imports);
-        result += classAnnotation;
-        result += className;
-        //Названия полей таблицы
-        result += tableFiledName();
-        //аннотации и поля
-        result += annotations();
-
-        result += "\r\n\n}";
-
-        return result;
-    }
-
-    /**
-     * Названия полей таблицы
-     *
-     * @return
-     */
-    private String tableFiledName() {
-        String result = "";
-        for (FieldModel model : fieldModelList) {
-            result += "\r\n\t" + getTableFieldName(model);
-        }
-        result += "\r\n";
-        return result;
-    }
-
-    private String getTableFieldName(FieldModel model) throws NullPointerException {
-        return "public final static String " + model.getName().toUpperCase() + " = \"" + model.getName() + "\";";
-    }
-
-    private void generateBasicImports() {
-        imports.clear();
-        imports.add("import com.j256.ormlite.field.DataType;");
-        imports.add("import com.j256.ormlite.field.DatabaseField;");
-        imports.add("import com.j256.ormlite.table.DatabaseTable;");
-    }
-
-    private String stringListToString(List<String> list) {
-        String result = "";
-
-        for (int i = 0; i < list.size(); i++) {
-            result += list.get(i);
-            result += "\r\n";
-
-        }
-        return result;
-    }
-
-    /**
-     * аннотации и поля
-     *
-     * @return
-     */
-    private String annotations() {
-        Map<String, Filed> filedMap = new HashMap<>();
-
-        Pattern pattern = Pattern.compile("(\\w+).*?REFERENCES \"(\\w+)\" \\(\"(\\w+)\"\\)");
-        Matcher matcher = pattern.matcher(sql);
-        while (matcher.find()) {
-            Filed filed = new Filed();
-
-            String filedName = matcher.group(1);
-            String referentObjName = matcher.group(2);
-            String referentObjFile = matcher.group(3);
-
-            filed.declaration = getFieldDeclaration(getClassName(referentObjName), getVariableName(referentObjName));
-            filed.annotation = getForeignAnnotation(filedName, foreignAutoRefresh);
-            filedMap.put(filedName, filed);
-        }
-
-
-        String result = "";
-        for (FieldModel model : fieldModelList) {
-            Filed filed = filedMap.get(model.getName());
-            if (filed != null) {
-                result += "\r\n\t" + filed.annotation;
-                result += "\r\n\t" + filed.declaration;
-            } else {
-                result += "\r\n\t" + getAnnotation(model);
-                result += "\r\n\t" + getFieldDeclaration(model);
-            }
-        }
-        return result;
-    }
-
-    private String getForeignAnnotation(String fieldName, boolean foreignAutoRefresh) throws NullPointerException {
-        String annotation = "@DatabaseField(";
-        annotation += "foreign = true, foreignAutoRefresh = " + foreignAutoRefresh + ",";
-        annotation += " columnName =" + fieldName.toUpperCase();
-        annotation += ")";
-        return annotation;
-    }
-
-    private String getAnnotation(FieldModel model) throws NullPointerException {
-        String annotation = "@DatabaseField(";
-        annotation += getFieldDataType(model, true);
-        annotation += ", columnName =" + model.getName().toUpperCase();
-        if (model.getPk().equals("1")) {
-            annotation += ", id = true";
-        }
-        annotation += ")";
-        return annotation;
-    }
-
-    /**
-     * Возвращает описание модели тип - наименование.
-     *
-     * @param model
-     * @return
-     */
-    private String getFieldDeclaration(FieldModel model) {
-        String type = getType(model, true);
-
-        if (type.equals("DATE")) {
-            imports.add("\nimport " + datePackage + ";\n");
-        }
-
-        return getFieldDeclaration(type, model.getName());
-    }
-
-    private String getFieldDeclaration(String type, String name) {
-        return "\t" + type + " " + name + ";";
-    }
-
-    /**
-     * Возвращает тип значения для аннотации
-     *
-     * @param model
-     * @return
+     * @param model    собственно набор полей
+     * @param isObject использовать примитив(например int) или его аналог объект(например Integer);
+     * @return Строка соответствующая типу поля
+     * @throws ClassCastException при всех непредвиденных обстоятельствах
      */
 
-    private String getFieldDataType(FieldModel model, Boolean isObject) throws ClassCastException {
+
+    public static String getFieldDataType(FieldModel model, Boolean isObject) throws ClassCastException {
         String type = "";
 
-        for (int i = 0; i < integerType.length; i++) {
-            if (integerType[i].equals(model.getType().toUpperCase())) {
+        for (String anIntegerType : integerType) {
+            if (anIntegerType.equals(model.getType().toUpperCase())) {
                 type = "INTEGER";
 
                 if (isObject) {
@@ -226,8 +52,8 @@ public class TableFields {
         }
 
         if (type.isEmpty()) {
-            for (int i = 0; i < textType.length; i++) {
-                if (model.getType().toUpperCase().contains(textType[i])) {
+            for (String aTextType : textType) {
+                if (model.getType().toUpperCase().contains(aTextType)) {
                     type = "STRING";
                     break;
                 }
@@ -235,8 +61,8 @@ public class TableFields {
         }
 
         if (type.isEmpty()) {
-            for (int i = 0; i < realType.length; i++) {
-                if (model.getType().toUpperCase().contains(realType[i])) {
+            for (String aRealType : realType) {
+                if (model.getType().toUpperCase().contains(aRealType)) {
                     type = "DOUBLE";
 
                     if (isObject) {
@@ -289,14 +115,15 @@ public class TableFields {
      * {"DATETIME","DATE"} -   Date
      * {"BOOL","BOOLEAN"} - преобразуются в Boolean или boolean в зависимости от настроек
      *
-     * @param model
-     * @return
+     * @param model    набор полей
+     * @param isObject объект ли
+     * @return Вернет строку, соответствующую типу
      */
-    public String getType(FieldModel model, Boolean isObject) throws ClassCastException {
+    public static String getType(FieldModel model, Boolean isObject) throws ClassCastException {
         String type = "";
 
-        for (int i = 0; i < integerType.length; i++) {
-            if (integerType[i].equals(model.getType().toUpperCase())) {
+        for (String anIntegerType : integerType) {
+            if (anIntegerType.equals(model.getType().toUpperCase())) {
 
                 if (isObject) {
                     type = "Integer";
@@ -309,8 +136,8 @@ public class TableFields {
         }
 
         if (type.isEmpty()) {
-            for (int i = 0; i < textType.length; i++) {
-                if (model.getType().toUpperCase().contains(textType[i])) {
+            for (String aTextType : textType) {
+                if (model.getType().toUpperCase().contains(aTextType)) {
                     type = "String";
                     break;
                 }
@@ -318,8 +145,8 @@ public class TableFields {
         }
 
         if (type.isEmpty()) {
-            for (int i = 0; i < realType.length; i++) {
-                if (model.getType().toUpperCase().contains(realType[i])) {
+            for (String aRealType : realType) {
+                if (model.getType().toUpperCase().contains(aRealType)) {
                     if (isObject) {
                         type = "Double";
                     } else {
@@ -362,13 +189,23 @@ public class TableFields {
         return result;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void addField(FieldModel model) {
+        if (model != null) {
+            fieldModelList.add(model);
+        }
+    }
+
     public FieldModel getPrimaryKeyFieldModel() throws RuntimeException {
         FieldModel primary = null;
 
         for (FieldModel model : fieldModelList) {
 
-            for (int i = 0; i < primarySimpleValue.length; i++) {
-                if (primarySimpleValue[i].equals(model.getName())) {
+            for (String aPrimarySimpleValue : primarySimpleValue) {
+                if (aPrimarySimpleValue.equals(model.getName())) {
                     primary = model;
                     break;
 
@@ -396,8 +233,8 @@ public class TableFields {
 
         for (FieldModel model : fieldModelList) {
 
-            for (int i = 0; i < primarySimpleValue.length; i++) {
-                if (primarySimpleValue[i].equals(model.getName())) {
+            for (String aPrimarySimpleValue : primarySimpleValue) {
+                if (aPrimarySimpleValue.equals(model.getName())) {
                     primary = model.getName();
                     break;
 
@@ -424,8 +261,8 @@ public class TableFields {
 
         for (FieldModel model : fieldModelList) {
 
-            for (int i = 0; i < secondarySimpleValue.length; i++) {
-                if (secondarySimpleValue[i].equals(model.getName())) {
+            for (String aSecondarySimpleValue : secondarySimpleValue) {
+                if (aSecondarySimpleValue.equals(model.getName())) {
                     secondary = model.getName();
                     break;
 
@@ -458,16 +295,14 @@ public class TableFields {
         return null;
     }
 
-}
+    public List<FieldModel> getFieldModelList() {
+        return fieldModelList;
+    }
 
-class Filed {
-    String declaration;
-    String annotation;
-
-    @Override
-    public String toString() {
-        return annotation + '\n' + declaration;
+    public String getSql() {
+        return sql;
     }
 }
+
 
 

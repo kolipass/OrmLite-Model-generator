@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.*;
+import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
 
 public class MainGenerator extends GeneratorAbstract {
     String dbfile;
@@ -53,7 +53,7 @@ public class MainGenerator extends GeneratorAbstract {
             PreparedStatement statementTableInfo = connection.prepareStatement("PRAGMA table_info(\"" + tableName + "\");");
             ResultSet tableInfoResult = statementTableInfo.executeQuery();
 
-            TableFields tableFields = new TableFields(tableName,sql);
+            TableFields tableFields = new TableFields(tableName, sql);
 
             while (tableInfoResult.next()) {
                 FieldModel model = new FieldModel(tableInfoResult);
@@ -61,43 +61,38 @@ public class MainGenerator extends GeneratorAbstract {
                 tableFields.addField(model);
             }
 
-            String modelClassPackage = classPackage + ".model";
+
+            //Генерируем модель
+            String modelClassPackage = classPackage + "." + ModelGenerator.POSTFIX;
             String modelPath = generateClassPath(outPath, modelClassPackage);
             if (!modelPath.isEmpty()) {
-                if (writeJava(modelPath, getClassName(tableName), tableFields.generate(modelClassPackage, " ru.ifacesoft.anu.model.Model"))) {
+                if (new ModelGenerator(modelPath, modelClassPackage, tableFields, "ru.ifacesoft.anu.model.Model").generate()) {
                     System.out.println(tableName + " модель создана в папку " + modelPath);
                 } else {
                     System.out.println("Не удалось записать" + tableName + "в папку " + modelPath);
                 }
-                String daoClassPackage = classPackage + ".DAO";
+                String daoClassPackage = classPackage + "." + DaoGenerator.POSTFIX;
                 String daoPath = generateClassPath(outPath, daoClassPackage);
-
+//                            Генерируем дао
                 if (new DaoGenerator(daoClassPackage, daoPath, tableFields).generate()) {
                     String modelName = getClassName(tableName);
-                    String daoName = modelName + "DAO";
+                    String daoName = modelName + DaoGenerator.POSTFIX;
 
                     baseHelperGenerator.addDao(modelName, daoName);
 
-                    System.out.println(tableName + " DAO создана в папку " + daoPath);
+                    System.out.println(tableName + " " + DaoGenerator.POSTFIX + " создана в папку " + daoPath);
                 } else {
-                    System.out.println("Не удалось записать " + tableName + "DAO в папку " + daoPath);
+                    System.out.println("Не удалось записать " + tableName + DaoGenerator.POSTFIX + " в папку " + daoPath);
                 }
 
-//                String ClassPackage = classPackage + ".modelCollection";
-//                String daoPath = generateClassPath(outPath, daoClassPackage);
-//
-//                if (new DaoGenerator(daoClassPackage, daoPath, tableFields).generate()) {
-//                    String modelName = getClassName(tableName);
-//                    String daoName = modelName + "DAO";
-//
-//                    baseHelperGenerator.addDao(modelName, daoName);
-//
-//                    System.out.println(tableName + " DAO создана в папку " + daoPath);
-//                } else {
-//                    System.out.println("Не удалось записать " + tableName + "DAO в папку " + daoPath);
-//                }
+                String modelCollectionClassPackage = classPackage + ".modelCollection";
+                String modelCollectionPath = generateClassPath(outPath, modelCollectionClassPackage);
 
-
+                if (new ModelCollectionGenerator(modelCollectionClassPackage, modelCollectionPath, tableFields).generate()) {
+                    System.out.println(tableName + " " + ModelCollectionGenerator.POSTFIX + " создана в папку " + daoPath);
+                } else {
+                    System.out.println("Не удалось записать " + tableName + ModelCollectionGenerator.POSTFIX + " в папку " + daoPath);
+                }
 
 
             } else {

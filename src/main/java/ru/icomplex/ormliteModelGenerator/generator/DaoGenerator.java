@@ -8,9 +8,11 @@ import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
  * User: artem
  * Date: 27.03.13
  * Time: 17:28
+ *
+ * Примитивны генератор DAO
  */
 public class DaoGenerator extends GeneratorAbstract {
-    private static final String POSTFIX = "DAO";
+    protected static final String POSTFIX = "DAO";
     String classPath;
     TableFields tableFields;
     String modelClassName;
@@ -33,7 +35,7 @@ public class DaoGenerator extends GeneratorAbstract {
                 "import java.util.List;\n";
         result += getImportModel(modelClassName, classPackage) + "\n\n";
 
-        String extendsString = "extends BaseDaoImpl<" + modelClassName + "," + tableFields.getType(tableFields.getPrimaryKeyFieldModel(), true) + ">";
+        String extendsString = "extends BaseDaoImpl<" + modelClassName + "," + TableFields.getType(tableFields.getPrimaryKeyFieldModel(), true) + ">";
         result += "public class " + modelClassName + POSTFIX + " " + extendsString + "{ \r\n";
 
         result += getConstructor() + "\n\n";

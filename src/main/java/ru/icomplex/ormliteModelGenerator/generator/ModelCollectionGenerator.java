@@ -8,15 +8,15 @@ import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
  * User: artem
  * Date: 27.03.13
  * Time: 17:28
- *
+ * <p/>
  * Генерирует Коллекцию моделей для anu-common
  */
 public class ModelCollectionGenerator extends GeneratorAbstract {
+    public static final String POSTFIX = "Collection";
     String classPath;
     TableFields tableFields;
     String modelClassName;
     private String classPackage;
-    private static final String POSTFIX = "Collection";
 
 
     public ModelCollectionGenerator(String classPackage, String classPath, TableFields tableFields) {
@@ -32,14 +32,14 @@ public class ModelCollectionGenerator extends GeneratorAbstract {
         result += "import ru.ifacesoft.anu.modelCollection.ModelCollection;\n";
         result += getImportModel(modelClassName, classPackage) + "\n\n";
 
-        String extendsString = "<M extends "+modelClassName+"> extends ModelCollection<M>";
+        String extendsString = "<M extends " + modelClassName + "> extends ModelCollection<M>";
         result += "public class " + modelClassName + POSTFIX + " " + extendsString + "{ \r\n";
 
 
-        result += getConstructor() + "\n\n";
+        result += getConstructor();
         //аннотации и поля
 
-        result += "\r\n\n}";
+        result += "\n}";
 
         return result;
     }
@@ -47,8 +47,6 @@ public class ModelCollectionGenerator extends GeneratorAbstract {
     private String getImportModel(String modelClassName, String classPackage) {
         return "import " + classPackage.substring(0, classPackage.lastIndexOf(".")) + ".model." + modelClassName + ";";
     }
-
-
 
     private String getConstructor() {
         String result = "";

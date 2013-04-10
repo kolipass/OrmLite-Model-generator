@@ -4,8 +4,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
-import static ru.icomplex.ormliteModelGenerator.util.ClassNameUtil.getClassName;
+import java.util.List;
 
 /**
  * User: artem
@@ -34,5 +33,16 @@ public abstract class GeneratorAbstract implements Generator {
         File classDirectory = new File(path);
 
         return classDirectory.mkdirs() || (classDirectory.exists() && classDirectory.isDirectory()) ? path : "";
+    }
+
+    protected String stringListToString(List<String> list) {
+        String result = "";
+
+        for (String aList : list) {
+            result += aList;
+            result += "\r\n";
+
+        }
+        return result;
     }
 }

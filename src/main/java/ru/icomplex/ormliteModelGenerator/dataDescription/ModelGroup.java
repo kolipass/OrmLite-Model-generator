@@ -4,6 +4,8 @@ package ru.icomplex.ormliteModelGenerator.dataDescription;
  * User: artem
  * Date: 26.03.13
  * Time: 10:37
+ *
+ * Служебная сущьность для описания датасхем вида Gu:GdeUslugi
  */
 
 public class ModelGroup {
